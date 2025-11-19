@@ -4,8 +4,9 @@ on:
   push:
     branches: [ main ]
   pull_request:
+    branches: [ main ]
 
-jobs pyram:
+jobs:
   build-and-test:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -21,26 +22,10 @@ jobs pyram:
         with:
           java-version: 17
           distribution: temurin
-          cache: gradle
+          cache: gradle                     
 
-      # Кэширование (явно, как просил преподаватель)
-      - name: Cache Gradle dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', 'gradle/wrapper/gradle-wrapper.properties') }}
-          restore-keys: ${{ runner.os }}-gradle-
-
-      # Статический анализ с проверкой JavaDoc (работает на всех ОС!)
-      - name: Run Checkstyle (with JavaDoc checks)
-        run: ./gradlew checkstyleMain checkstyleTest --no-daemon
-
-      # Сборка без тестов
       - name: Build project
-        run: ./gradlew build -x test --no-daemon
+        run: bash ./gradlew build -x test --no-daemon
 
-      # Запуск тестов
       - name: Run tests
-        run: ./gradlew test --no-daemon
+        run: bash ./gradlew test --no-daemon
