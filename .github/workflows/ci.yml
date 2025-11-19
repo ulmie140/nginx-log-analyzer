@@ -17,21 +17,20 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: 'gradle'
+          cache: 'gradle'          # встроенное кэширование Gradle
 
-      - name: Grant execute permission for gradlew (Unix)
+      # Делаем chmod ТОЛЬКО на Linux и macOS
+      - name: Grant execute permission for gradlew (Linux/macOS only)
         if: runner.os != 'Windows'
         run: chmod +x gradlew
 
-      # Кэширование Gradle
+      # Кэширование вручную (на всякий случай — надёжнее)
       - name: Cache Gradle packages
         uses: actions/cache@v4
         with:
@@ -42,8 +41,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      # ВАЖНЫЙ ШАГ: подменяем checkstyle.xml только в CI!
+      # Подменяем checkstyle.xml только в CI (твой старый файл остаётся нетронутым!)
       - name: Setup strict Checkstyle with JavaDoc validation
+        shell: bash                     # используем bash даже на Windows (GitHub предоставляет)
         run: |
           cat > checkstyle.xml << 'EOF'
           <?xml version="1.0"?>
@@ -64,12 +64,12 @@ jobs:
           </module>
           EOF
 
-      # Теперь запускаем Checkstyle — он использует только что созданный строгий конфиг
-      - name: Run Checkstyle (with full JavaDoc checks)
+      # Запуск Checkstyle — теперь с проверкой JavaDoc
+      - name: Run Checkstyle (with JavaDoc checks)
         run: ./gradlew checkstyleMain checkstyleTest --no-daemon
 
-      # Обычная сборка и тесты
-      - name: Build and run tests
+      # Полная сборка и тесты
+      - name: Build and test
         run: ./gradlew clean build --no-daemon
 
       # Артефакты (по желанию)
