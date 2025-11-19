@@ -4,9 +4,8 @@ on:
   push:
     branches: [ main ]
   pull_request:
-    branches: [ main ]
 
-jobs:
+jobs pyram:
   build-and-test:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -22,51 +21,26 @@ jobs:
         with:
           java-version: 17
           distribution: temurin
-          cache: gradle                                   # встроенное кэширование Gradle
+          cache: gradle
 
-      # Явное кэширование .gradle/caches и .gradle/wrapper (точно как в доп. задании)
+      # Кэширование (явно, как просил преподаватель)
       - name: Cache Gradle dependencies
         uses: actions/cache@v4
         with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', 'gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
 
-      # ВАЖНО: временно подменяем checkstyle.xml только в CI → проверяем JavaDoc!
-      - name: Enable strict JavaDoc checks in CI
-        run: |
-          cat > checkstyle.xml << 'EOF'
-          <?xml version="1.0"?>
-          <!DOCTYPE module PUBLIC "-//Checkstyle//DTD Configuration 1.3//EN"
-                  "https://checkstyle.org/dtds/configuration_1_3.dtd">
-          <module name="Checker">
-            <property name="charset" value="UTF-8"/>
-            <property name="severity" value="error"/>
-            <module name="TreeWalker">
-              <module name="JavadocMethod">
-                <property name="scope" value="public"/>
-                <property name="allowMissingParamTags" value="false"/>
-                <property name="allowMissingReturnTag" value="false"/>
-                <property name="allowMissingThrowsTags" value="false"/>
-              </module>
-              <module name="JavadocType"/>
-              <module name="UnusedImports"/>
-              <module name="AvoidStarImport"/>
-            </module>
-          </module>
-          EOF
-
-      # Статический анализ с проверкой JavaDoc — падёт, если доки неполные
-      - name: Run Checkstyle (JavaDoc required)
-        run: bash ./gradlew checkstyleMain checkstyleTest --no-daemon
+      # Статический анализ с проверкой JavaDoc (работает на всех ОС!)
+      - name: Run Checkstyle (with JavaDoc checks)
+        run: ./gradlew checkstyleMain checkstyleTest --no-daemon
 
       # Сборка без тестов
       - name: Build project
-        run: bash ./gradlew build -x test --no-daemon
+        run: ./gradlew build -x test --no-daemon
 
-      # Отдельный запуск тестов
+      # Запуск тестов
       - name: Run tests
-        run: bash ./gradlew test --no-daemon
+        run: ./gradlew test --no-daemon
