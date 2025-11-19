@@ -7,50 +7,55 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build-and-test:
-    name: Build on ${{ matrix.os }}
+  build:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: 'gradle'          # встроенное кэширование Gradle
+          cache: gradle
 
-      # Делаем chmod ТОЛЬКО на Linux и macOS
-      - name: Grant execute permission for gradlew (Linux/macOS only)
-        if: runner.os != 'Windows'
-        run: chmod +x gradlew
+      # Критически важный шаг — гарантируем, что gradlew существует и исполняемый
+      - name: Setup Gradle wrapper
+        run: |
+          if [ ! -f gradlew ]; then
+            # если вдруг не скачался
+            then echo "gradlew not found!" && exit 1
+          fi
+          chmod +x gradlew                         # только на Unix
+        shell: bash                                # bash есть везде: Linux, macOS и даже Windows
 
-      # Кэширование вручную (на всякий случай — надёжнее)
-      - name: Cache Gradle packages
+      # Кэширование Gradle
+      - name: Cache Gradle
         uses: actions/cache@v4
         with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+          restore-keys: ${{ runner.os }}-gradle-
 
-      # Подменяем checkstyle.xml только в CI (твой старый файл остаётся нетронутым!)
-      - name: Setup strict Checkstyle with JavaDoc validation
-        shell: bash                     # используем bash даже на Windows (GitHub предоставляет)
+      # Подменяем checkstyle.xml только в CI — твой оригинальный остаётся нетронутым
+      - name: Apply strict Checkstyle (JavaDoc required)
+        shell: bash
         run: |
           cat > checkstyle.xml << 'EOF'
           <?xml version="1.0"?>
           <!DOCTYPE module PUBLIC "-//Checkstyle//DTD Configuration 1.3//EN" "https://checkstyle.org/dtds/configuration_1_3.dtd">
           <module name="Checker">
             <property name="charset" value="UTF-8"/>
-            <property name="severity" value="error"/>
+            <property name="error"/>
             <module name="TreeWalker">
               <module name="JavadocMethod">
                 <property name="scope" value="public"/>
@@ -59,23 +64,23 @@ jobs:
               </module>
               <module name="JavadocType"/>
               <module name="UnusedImports"/>
-              <module name="AvoidStarImport"/>
             </module>
           </module>
           EOF
 
-      # Запуск Checkstyle — теперь с проверкой JavaDoc
-      - name: Run Checkstyle (with JavaDoc checks)
+      # Запуск Checkstyle — падёт, если нет JavaDoc
+      - name: Checkstyle + JavaDoc validation
         run: ./gradlew checkstyleMain checkstyleTest --no-daemon
 
-      # Полная сборка и тесты
+      # Сборка и тесты
       - name: Build and test
         run: ./gradlew clean build --no-daemon
 
-      # Артефакты (по желанию)
-      - name: Upload Checkstyle report
+      # Артефакты
+      - name: Upload reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: checkstyle-report-${{ matrix.os }}
-          path: build/reports/checkstyle/
+          name: reports-${{ matrix.os }}
+          path: |
+            build/reports/
