@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<checkstyle version="10.12.0">
+<file name="D:\Git_console\nginx-log-analyzer\src\main\java\com\university\nginxloganalyzer\config\AppConfig.java">
+</file>
+<file name="D:\Git_console\nginx-log-analyzer\src\main\java\com\university\nginxloganalyzer\Main.java">
+</file>
+<file name="D:\Git_console\nginx-log-analyzer\src\main\java\com\university\nginxloganalyzer\model\LogEntry.java">
+</file>
+<file name="D:\Git_console\nginx-log-analyzer\src\main\java\com\university\nginxloganalyzer\parser\NginxLogParser.java">
+</file>
+<file name="D:\Git_console\nginx-log-analyzer\src\main\java\com\university\nginxloganalyzer\report\JsonReportWriter.java">
+</file>
+<file name="D:\Git_console\nginx-log-analyzer\src\main\java\com\university\nginxloganalyzer\report\Report.java">
+</file>
+<file name="D:\Git_console\nginx-log-analyzer\src\main\java\com\university\nginxloganalyzer\service\LogAnalysisService.java">
+</file>
+</checkstyle>
