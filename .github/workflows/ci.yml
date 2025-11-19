@@ -22,5 +22,6 @@ jobs:
           distribution: temurin
           cache: gradle
 
+      # Вот эта строчка решает ВСЁ
       - name: Build with Gradle
-        run: ./gradlew build --no-daemon
+        run: bash ./gradlew build --no-daemon
