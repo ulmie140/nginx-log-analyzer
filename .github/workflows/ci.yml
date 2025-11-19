@@ -1,41 +1,26 @@
-name: Java CI
+name: CI
 
-# Запускаем при любом push в main
 on:
   push:
     branches: [ main ]
   pull_request:
-    branches: [ main ]
 
 jobs:
   build:
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
-    runs-on: ${{ matrix.os }}
-
     steps:
-      # 1. Качаем код
       - uses: actions/checkout@v4
 
-      # 2. Ставим Java 17 + автоматом кэширует Gradle
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: gradle               # ← кэширование Gradle (требование выполнено)
+          java-version: 17
+          distribution: temurin
+          cache: gradle
 
-      # 3. Делаем gradlew исполняемым ТОЛЬКО на Linux/macOS
-      - name: chmod gradlew (Unix only)
-        if: runner.os != 'Windows'
-        run: chmod +x gradlew
-
-      # 4. Запускаем Checkstyle (проверит твой текущий checkstyle.xml — в нём только UnusedImports)
-      - name: Checkstyle
-        run: ./gradlew checkstyleMain checkstyleTest
-
-      # 5. Полная сборка и тесты
-      - name: Build & Test
-        run: ./gradlew clean build
+      - name: Build with Gradle
+        run: ./gradlew build --no-daemon
