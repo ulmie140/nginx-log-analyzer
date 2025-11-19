@@ -34,14 +34,14 @@
 
 В открывшемся терминале выполните по очереди:
 
-mkdir nginx-project
-cd nginx-project
-git clone https://github.com/ulmie140/nginx-log-analyzer.git
-cd nginx-log-analyzer
+- mkdir nginx-project
+- cd nginx-project
+- git clone https://github.com/ulmie140/nginx-log-analyzer.git
+- cd nginx-log-analyzer
 
 # 2. Создаём папку для логов и открываем файл в Блокноте
-mkdir data
-notepad data\access.log
+- mkdir data
+- notepad data\access.log
 
 ```bash
 192.168.1.10 - - [19/Nov/2025:12:15:22 +0300] "GET /index.html HTTP/1.1" 200 3521 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
@@ -59,8 +59,8 @@ notepad data\access.log
 → Нажмите Ctrl+S, закройте Блокнот.
 
 # 3. Создаём конфигурационный файл
-mkdir src\main\resources 
-notepad src\main\resources\app.properties
+- mkdir src\main\resources 
+- notepad src\main\resources\app.properties
 
 ```bash
 log.file.path=data/access.log
@@ -71,7 +71,7 @@ output.target=STDOUT
 → Нажмите Ctrl+S, закройте Блокнот.
 
 # 4. Собираем проект
-./gradlew build
+- ./gradlew build
 
 # 5. Запускаем приложение
-./gradlew run
+- ./gradlew run
