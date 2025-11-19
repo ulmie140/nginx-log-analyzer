@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/ulmie140/nginx-log-analyzer/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ulmie140/nginx-log-analyzer/actions/workflows/ci.yml)
 
-**Анализатор логов веб-сервера Nginx** — лабораторная работа  
+**Анализатор логов веб-сервера Nginx** — лабораторная работа №3  
 Автор: **Бондаренко Илья**  
 Дата: ноябрь 2025
 
@@ -90,28 +90,53 @@ output.target=STDOUT
 
 После того как программа запустилась вы должны увидеть следующее в командной строке
 {
+
   "top_ips" : [ {
+  
     "ip" : "192.168.1.10",
+	
     "count" : 4
+	
   }, {
+  
     "ip" : "10.10.5.25",
+	
     "count" : 4
+	
   }, {
+  
     "ip" : "172.16.0.8",
+	
     "count" : 1
+	
   }, {
+  
     "ip" : "203.0.113.5",
+	
     "count" : 1
+	
   }, {
+  
     "ip" : "192.168.1.15",
+	
     "count" : 1
+	
   } ],
+  
   "status_codes" : {
+  
     "200" : 6,
+	
     "301" : 1,
+	
     "501" : 1,
+	
     "403" : 1,
+	
     "404" : 2
+	
   },
+  
   "user_agent_hits" : 4
+  
 }
