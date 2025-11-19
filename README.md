@@ -22,20 +22,28 @@
 
 ## Полная инструкция по запуску (для тех, кто делает это впервые)
 
-### 1. Создаём папку и клонируем проект
+Для начала необходимо открыть командную строку для этого необходимо нажать комбинацию клавиш
 
-Откройте терминал (PowerShell, CMD, Git Bash — любой) и выполните по очереди:
+- WIN + R
 
-```bash
+И в открывшемся окне написать 
+
+- cmd
+
+# 1. Создаём папку и клонируем проект
+
+В открывшемся терминале выполните по очереди:
+
 mkdir nginx-project
 cd nginx-project
 git clone https://github.com/ulmie140/nginx-log-analyzer.git
 cd nginx-log-analyzer
 
-# 2. Создаём тестовый лог-файл одной командой
+# 2. Создаём папку для логов и открываем файл в Блокноте
 mkdir data
+notepad data\access.log
 
-cat > data/access.log << 'EOF'
+```bash
 192.168.1.10 - - [19/Nov/2025:12:15:22 +0300] "GET /index.html HTTP/1.1" 200 3521 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
 192.168.1.10 - - [19/Nov/2025:12:15:25 +0300] "GET /style.css HTTP/1.1" 200 842 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
 10.10.5.25 - - [19/Nov/2025:12:16:01 +0300] "GET /api/users HTTP/1.1" 404 127 "-" "curl/7.68.0"
@@ -47,17 +55,20 @@ cat > data/access.log << 'EOF'
 10.10.5.25 - - [19/Nov/2025:12:21:15 +0300] "GET /health HTTP/1.1" 200 67 "-" "curl/7.68.0"
 192.168.1.15 - - [19/Nov/2025:12:22:30 +0300] "GET /about.html HTTP/1.1" 301 178 "-" "Mozilla/5.0 (Linux; Android 10)"
 10.10.5.25 - - [19/Nov/2025:12:23:44 +0300] "DELETE /temp/file.txt HTTP/1.1" 501 198 "-" "curl/7.68.0"
-EOF
+```
+→ Нажмите Ctrl+S, закройте Блокнот.
 
-# 3. Создаём конфигурационный файл одной командой
-mkdir -p src/main/resources
+# 3. Создаём конфигурационный файл
+mkdir src\main\resources 
+notepad src\main\resources\app.properties
 
-cat > src/main/resources/app.properties << 'EOF'
+```bash
 log.file.path=data/access.log
 report.top.ip.count=10
 filter.user.agent=curl/7.68.0
 output.target=STDOUT
-EOF
+```
+→ Нажмите Ctrl+S, закройте Блокнот.
 
 # 4. Собираем проект
 ./gradlew build
