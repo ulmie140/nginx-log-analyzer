@@ -8,54 +8,47 @@ on:
 
 jobs:
   build:
+    name: Build on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
-      - name: Checkout code
+      # 1. Скачиваем репозиторий
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
+      # 2. Устанавливаем JDK 17 + автоматическое кэширование Gradle
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: gradle
+          cache: gradle                     # ← встроенное кэширование Gradle
 
-      # Критически важный шаг — гарантируем, что gradlew существует и исполняемый
-      - name: Setup Gradle wrapper
+      # 3. Делаем gradlew исполняемым ТОЛЬКО если он существует и мы НЕ на Windows
+      - name: Make gradlew executable (Unix only)
+        if: runner.os != 'Windows'
         run: |
-          if [ ! -f gradlew ]; then
-            # если вдруг не скачался
-            then echo "gradlew not found!" && exit 1
+          if [ -f gradlew ]; then
+            chmod +x gradlew
+          else
+            echo "gradlew not found – should not happen!"
+            exit 1
           fi
-          chmod +x gradlew                         # только на Unix
-        shell: bash                                # bash есть везде: Linux, macOS и даже Windows
 
-      # Кэширование Gradle
-      - name: Cache Gradle
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: ${{ runner.os }}-gradle-
-
-      # Подменяем checkstyle.xml только в CI — твой оригинальный остаётся нетронутым
-      - name: Apply strict Checkstyle (JavaDoc required)
+      # 4. Подменяем checkstyle.xml в CI (оставляем твой оригинальный файл нетронутым)
+      - name: Replace checkstyle.xml with strict version (JavaDoc required)
         shell: bash
         run: |
           cat > checkstyle.xml << 'EOF'
           <?xml version="1.0"?>
-          <!DOCTYPE module PUBLIC "-//Checkstyle//DTD Configuration 1.3//EN" "https://checkstyle.org/dtds/configuration_1_3.dtd">
+          <!DOCTYPE module PUBLIC "-//Checkstyle//DTD Configuration 1.3//EN"
+                  "https://checkstyle.org/dtds/configuration_1_3.dtd">
           <module name="Checker">
             <property name="charset" value="UTF-8"/>
-            <property name="error"/>
+            <property name="severity" value="error"/>
             <module name="TreeWalker">
               <module name="JavadocMethod">
                 <property name="scope" value="public"/>
@@ -64,23 +57,23 @@ jobs:
               </module>
               <module name="JavadocType"/>
               <module name="UnusedImports"/>
+              <module name="AvoidStarImport"/>
             </module>
           </module>
           EOF
 
-      # Запуск Checkstyle — падёт, если нет JavaDoc
-      - name: Checkstyle + JavaDoc validation
-        run: ./gradlew checkstyleMain checkstyleTest --no-daemon
+      # 5. Запуск Checkstyle (с проверкой JavaDoc!)
+      - name: Run Checkstyle (JavaDoc validation)
+        run: ./gradlew checkstyleMain checkstyleTest
 
-      # Сборка и тесты
+      # 6. Полная сборка + тесты
       - name: Build and test
-        run: ./gradlew clean build --no-daemon
+        run: ./gradlew clean build
 
-      # Артефакты
-      - name: Upload reports
+      # 7. Загрузка отчётов (по желанию)
+      - name: Upload Checkstyle reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: reports-${{ matrix.os }}
-          path: |
-            build/reports/
+          name: checkstyle-${{ matrix.os }}
+          path: build/reports/checkstyle/
