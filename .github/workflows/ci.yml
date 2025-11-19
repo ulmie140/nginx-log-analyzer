@@ -4,24 +4,30 @@ on:
   push:
     branches: [ main ]
   pull_request:
+    branches: [ main ]
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: 17
           distribution: temurin
-          cache: gradle
+          cache: gradle                     
 
-      # Вот эта строчка решает ВСЁ
-      - name: Build with Gradle
-        run: bash ./gradlew build --no-daemon
+      # Отдельный шаг — только сборка (без тестов)
+      - name: Build project
+        run: bash ./gradlew build -x test --no-daemon
+
+      # Отдельный шаг — только запуск тестов
+      - name: Run tests
+        run: bash ./gradlew test --no-daemon

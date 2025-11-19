@@ -19,7 +19,7 @@ Thumbs.db
 *.log
 *.tmp
 
-# Конфигурация приложения — НЕ коммитим!
+# Конфигурация приложения 
 src/main/resources/app.properties
 src/test/resources/app.properties
 
